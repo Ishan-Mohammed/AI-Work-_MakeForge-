@@ -261,14 +261,14 @@ export default function App() {
     if (section === "flashcards" || section === "all") {
       content += `--- FLASHCARDS ---\n`;
       studyMaterial.flashcards.forEach((fc, idx) => {
-        content += `${idx + 1}. Q: ${fc.question}\n   A: ${fc.answer}\n\n`;
+        content += `${idx + 1}. Q: ${fc.front}\n   A: ${fc.back}\n\n`;
       });
     }
 
     if (section === "concepts" || section === "all") {
       content += `--- KEY CONCEPTS ---\n`;
       studyMaterial.keyConcepts.forEach((kc) => {
-        content += `Concept: ${kc.concept} [${kc.tag}]\nDefinition: ${kc.definition}\n\n`;
+        content += `Concept: ${kc.concept}\nSummary: ${kc.summary}\n\n`;
       });
     }
 
@@ -276,8 +276,8 @@ export default function App() {
       content += `--- REVISION MODULES ---\n`;
       studyMaterial.revisionCards.forEach((rc) => {
         content += `Topic: ${rc.topic}\n`;
-        rc.bullets.forEach((bullet) => {
-          content += `• ${bullet}\n`;
+        rc.points.forEach((point) => {
+          content += `• ${point}\n`;
         });
         content += `\n`;
       });
@@ -320,16 +320,8 @@ export default function App() {
     }
   };
 
-  // Get distinct custom tags extracted
-  const allTags = studyMaterial 
-    ? ["All", ...Array.from(new Set(studyMaterial.keyConcepts.map((k) => k.tag)))]
-    : [];
-
-  const filteredConcepts = studyMaterial
-    ? selectedTagFilter === "All"
-      ? studyMaterial.keyConcepts
-      : studyMaterial.keyConcepts.filter((k) => k.tag === selectedTagFilter)
-    : [];
+  // Concept mapping logic
+  const filteredConcepts = studyMaterial ? studyMaterial.keyConcepts : [];
 
   return (
     <div className="min-h-screen bg-[#faf9f6] text-stone-800 dark:bg-zinc-950 dark:text-zinc-100 transition-colors duration-300 grid-overlay pb-16">
@@ -594,7 +586,7 @@ export default function App() {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleCopyToClipboard(
-                        `Question: ${studyMaterial.flashcards[currentFlashcardIndex].question}\nAnswer: ${studyMaterial.flashcards[currentFlashcardIndex].answer}`,
+                        `Question: ${studyMaterial.flashcards[currentFlashcardIndex].front}\nAnswer: ${studyMaterial.flashcards[currentFlashcardIndex].back}`,
                         "fc-single"
                       )}
                       className="flex h-9 items-center space-x-1 rounded-lg border border-stone-200 bg-white px-2.5 text-xs font-semibold text-stone-700 hover:bg-stone-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-all cursor-pointer"
@@ -644,7 +636,7 @@ export default function App() {
                         </div>
                         
                         <div className="my-auto text-center font-display text-lg sm:text-xl font-bold leading-relaxed text-stone-800 dark:text-zinc-50 px-2 select-none">
-                          {studyMaterial.flashcards[currentFlashcardIndex]?.question}
+                          {studyMaterial.flashcards[currentFlashcardIndex]?.front}
                         </div>
 
                         <div className="text-center text-xs text-stone-400 dark:text-zinc-500 font-medium">
@@ -664,7 +656,7 @@ export default function App() {
                         </div>
 
                         <div className="my-auto text-center text-base sm:text-lg leading-relaxed text-zinc-100 dark:text-zinc-200 px-2 select-none">
-                          {studyMaterial.flashcards[currentFlashcardIndex]?.answer}
+                          {studyMaterial.flashcards[currentFlashcardIndex]?.back}
                         </div>
 
                         <div className="text-center text-xs text-stone-500 dark:text-stone-400 font-medium">
@@ -748,14 +740,14 @@ export default function App() {
                       Extracted Academic Concepts
                     </h2>
                     <p className="text-xs text-stone-500 dark:text-zinc-400 mt-1">
-                      Key academic definitions, vocabulary words, and conceptual tags extracted by MindForge AI.
+                      Key academic concepts and descriptions extracted by MindForge AI.
                     </p>
                   </div>
 
                   <div className="flex items-center space-x-2 shrink-0">
                     <button
                       onClick={() => {
-                        const compiled = studyMaterial.keyConcepts.map(c => `[${c.tag}] ${c.concept}: ${c.definition}`).join("\n\n");
+                        const compiled = studyMaterial.keyConcepts.map(c => `${c.concept}: ${c.summary}`).join("\n\n");
                         handleCopyToClipboard(compiled, "concepts-all");
                       }}
                       className="flex h-9 items-center space-x-1 rounded-lg border border-stone-200 bg-white px-2.5 text-xs font-semibold text-stone-700 hover:bg-stone-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-all cursor-pointer"
@@ -782,26 +774,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Tags filtering block */}
-                {allTags.length > 2 && (
-                  <div className="flex flex-wrap gap-1.5 items-center bg-stone-100 dark:bg-zinc-900 p-2 rounded-xl border border-stone-200/50 dark:border-zinc-800/50">
-                    <span className="text-xs font-bold text-stone-500 dark:text-zinc-400 px-2">Filter Tags:</span>
-                    {allTags.map((tag) => (
-                      <button
-                        key={tag}
-                        onClick={() => setSelectedTagFilter(tag)}
-                        className={`text-xs px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
-                          selectedTagFilter === tag
-                            ? "bg-teal-600 text-white dark:bg-teal-500"
-                            : "bg-white hover:bg-stone-100 text-stone-600 dark:bg-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                        }`}
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
                 {/* Concepts cards container */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   {filteredConcepts.map((item, index) => (
@@ -810,15 +782,15 @@ export default function App() {
                       className="group rounded-xl border border-stone-200/80 bg-white p-5 shadow-sm hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/40 hover:border-teal-500/30 dark:hover:border-teal-500/40 transition-all duration-200 flex flex-col justify-between"
                     >
                       <div>
-                        {/* Concept Top tag */}
+                        {/* Concept Top Header */}
                         <div className="flex items-center justify-between mb-3">
                           <span className="text-[10px] font-mono font-bold text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-md uppercase tracking-wider">
-                            {item.tag || "General"}
+                            Concept {index + 1}
                           </span>
                           <button
-                            onClick={() => handleCopyToClipboard(`${item.concept}: ${item.definition}`, `concept-${index}`)}
+                            onClick={() => handleCopyToClipboard(`${item.concept}: ${item.summary}`, `concept-${index}`)}
                             className="text-stone-400 hover:text-stone-700 dark:hover:text-zinc-200 transition-colors cursor-pointer"
-                            title="Copy concept cards"
+                            title="Copy concept card"
                           >
                             {copiedState[`concept-${index}`] ? (
                               <Check className="h-3.5 w-3.5 text-teal-600" />
@@ -833,9 +805,9 @@ export default function App() {
                           {item.concept}
                         </h3>
 
-                        {/* Academic def */}
+                        {/* Brief summary */}
                         <p className="text-stone-600 dark:text-zinc-300 text-sm leading-relaxed">
-                          {item.definition}
+                          {item.summary}
                         </p>
                       </div>
                     </div>
@@ -844,7 +816,7 @@ export default function App() {
                   {filteredConcepts.length === 0 && (
                     <div className="col-span-2 text-center py-10 bg-stone-50 dark:bg-zinc-900/20 rounded-xl border border-dashed border-stone-200 dark:border-zinc-800">
                       <p className="text-sm text-stone-500 dark:text-zinc-400">
-                        No concepts matched the tag filter selections. Change filter settings or reset to view all.
+                        No concepts successfully extracted.
                       </p>
                     </div>
                   )}
@@ -864,14 +836,14 @@ export default function App() {
                       Active Revision Cards
                     </h2>
                     <p className="text-xs text-stone-500 dark:text-zinc-400 mt-1">
-                      High-yield pre-exam summaries organized by key modular topics.
+                      High-yield study summaries organized by core topics.
                     </p>
                   </div>
 
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => {
-                        const compiled = studyMaterial.revisionCards.map(r => `Topic: ${r.topic}\n` + r.bullets.map(b => `• ${b}`).join("\n")).join("\n\n");
+                        const compiled = studyMaterial.revisionCards.map(r => `Topic: ${r.topic}\n` + r.points.map(p => `• ${p}`).join("\n")).join("\n\n");
                         handleCopyToClipboard(compiled, "revision-all");
                       }}
                       className="flex h-9 items-center space-x-1 rounded-lg border border-stone-200 bg-white px-2.5 text-xs font-semibold text-stone-700 hover:bg-stone-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-all cursor-pointer"
@@ -918,7 +890,7 @@ export default function App() {
 
                         <button
                           onClick={() => {
-                            const formatted = `${rc.topic}:\n` + rc.bullets.map(b => `• ${b}`).join("\n");
+                            const formatted = `${rc.topic}:\n` + rc.points.map(p => `• ${p}`).join("\n");
                             handleCopyToClipboard(formatted, `rev-card-${idx}`);
                           }}
                           className="text-stone-400 hover:text-stone-700 dark:hover:text-zinc-200 transition-colors cursor-pointer"
@@ -933,13 +905,13 @@ export default function App() {
 
                       {/* Card Content list */}
                       <ul className="p-5 space-y-3">
-                        {rc.bullets.map((bullet, bIdx) => (
+                        {rc.points.map((point, pIdx) => (
                           <li 
-                            key={bIdx}
+                            key={pIdx}
                             className="flex items-start space-x-3 text-stone-700 dark:text-zinc-300 text-sm leading-relaxed"
                           >
                             <span className="flex h-2 w-2 rounded-full bg-teal-500 mt-1.5 shrink-0" />
-                            <span>{bullet}</span>
+                            <span>{point}</span>
                           </li>
                         ))}
                       </ul>

@@ -37,13 +37,25 @@ async function startServer() {
       // Request study material transformation with strict structural guidance
       const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
-        contents: `You are an expert educational designer and academic tutor. Convert the following text/lesson notes into high-quality study materials.
-Requirement:
-1. Generate a minimum of 10 comprehensive flashcards covering a broad range of questions, depth, and detail. Give each card a sequential ID starting from "fc-1" up to "fc-x".
-2. Extract all crucial key concepts and terminologies, mapping them to clear academic definitions and single-word contextual tags (e.g., "History", "Formula", "Definition", "Mechanism").
-3. Create structured bullet-point revision modules in an easy-to-read pre-exam review style. Each topic should contain highly scannable bullet points detailing key facts, dates, theories, or formulas.
+        contents: `You are an expert educational content generator. Your task is to analyze the user's input study material and forge three distinct study assets: Flashcards, Key Concepts, and Revision Cards.
 
-Source lesson notes / study materials:
+CRITICAL PERFORMANCE RULES:
+1. Be extremely concise. Avoid conversational filler, introductions, or conclusions. Start generating data immediately.
+2. Limit the output size to prevent server processing timeouts. 
+3. Generate exactly:
+   - 5 high-impact Flashcards (Front/Back)
+   - 5 core Key Concepts (Concept/Brief Summary)
+   - 3 concise Revision Cards (Topic/Bullet-point breakdown)
+4. Respond ONLY in valid, minified JSON format. Do not wrap the JSON in \`\`\`json markdown blocks. 
+
+Output Structure:
+{
+  "flashcards": [{"front": "Question", "back": "Answer"}],
+  "keyConcepts": [{"concept": "Name", "summary": "One sentence summary"}],
+  "revisionCards": [{"topic": "Title", "points": ["Point 1", "Point 2"]}]
+}
+
+Input Study Material:
 ${content}`,
         config: {
           responseMimeType: "application/json",
@@ -52,43 +64,41 @@ ${content}`,
             properties: {
               flashcards: {
                 type: "ARRAY",
-                description: "List of flashcards. Must contain at least 10 elements.",
+                description: "List of exactly 5 high-impact flashcards with front/back keys.",
                 items: {
                   type: "OBJECT",
                   properties: {
-                    id: { type: "STRING" },
-                    question: { type: "STRING" },
-                    answer: { type: "STRING" }
+                    front: { type: "STRING" },
+                    back: { type: "STRING" }
                   },
-                  required: ["id", "question", "answer"]
+                  required: ["front", "back"]
                 }
               },
               keyConcepts: {
                 type: "ARRAY",
-                description: "Array of extracted academic key concepts.",
+                description: "List of exactly 5 core key concepts.",
                 items: {
                   type: "OBJECT",
                   properties: {
                     concept: { type: "STRING" },
-                    definition: { type: "STRING" },
-                    tag: { type: "STRING" }
+                    summary: { type: "STRING" }
                   },
-                  required: ["concept", "definition", "tag"]
+                  required: ["concept", "summary"]
                 }
               },
               revisionCards: {
                 type: "ARRAY",
-                description: "Pre-exam high-yield revision cards summarizing topics in bullet point formats.",
+                description: "List of exactly 3 concise revision cards.",
                 items: {
                   type: "OBJECT",
                   properties: {
                     topic: { type: "STRING" },
-                    bullets: {
+                    points: {
                       type: "ARRAY",
                       items: { type: "STRING" }
                     }
                   },
-                  required: ["topic", "bullets"]
+                  required: ["topic", "points"]
                 }
               }
             },

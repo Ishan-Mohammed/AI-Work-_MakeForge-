@@ -1,18 +1,16 @@
 export interface Flashcard {
-  id: string;
-  question: string;
-  answer: string;
+  front: string;
+  back: string;
 }
 
 export interface KeyConcept {
   concept: string;
-  definition: string;
-  tag: string;
+  summary: string;
 }
 
 export interface RevisionCard {
   topic: string;
-  bullets: string[];
+  points: string[];
 }
 
 export interface StudyMaterial {
