@@ -1,0 +1,6 @@
+{
+  "name": "MindForge AI",
+  "description": "Transform notes, lessons, and study materials into AI-powered flashcards, key concepts, and revision cards in seconds.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
